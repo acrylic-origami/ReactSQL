@@ -1,0 +1,21 @@
+{
+    "name": "fog/pando-db",
+    "description": "Reactive SQL database wrapper for Hack.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dev",
+            "email": "dev@shufflr.io"
+        }
+    ],
+    "require": {
+        "greenlion/php-sql-parser":"~4.0",
+        "react/react":"~0.4"
+    },
+    "autoload": {
+        "classmap": ["root-ns/"],
+        "psr-4": {
+            "Pando\\": "src"
+        }
+    }
+}
