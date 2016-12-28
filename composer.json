@@ -8,6 +8,7 @@
             "email": "dev@shufflr.io"
         }
     ],
+    "version": "0.1.0-dev",
     "require": {
         "greenlion/php-sql-parser":"~4.0",
         "react/react":"~0.4"
