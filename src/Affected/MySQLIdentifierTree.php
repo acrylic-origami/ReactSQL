@@ -2,11 +2,11 @@
 namespace Pando\Affected;
 use \Pando\Affected;
 use \Pando\Util\Collection\KeyedIterableWrapper;
-final class MySQLIdentifierTree extends KeyedIterableWrapper<string, MySQLDBIdentifierTree, Map<string, MySQLDBIdentifierTree>> {
+final class MySQLIdentifierTree<+T> extends KeyedIterableWrapper<string, MySQLDBIdentifierTree, Map<string, MySQLDBIdentifierTree>> {
 	const string CATCHALL = MySQLDBIdentifierTree::CATCHALL;
 	public function __construct(
 		public string $default_db,
-		Map<string, MySQLDBIdentifierTree> $units = Map{},
+		Map<string, MySQLDBIdentifierTree<T>> $units = Map{},
 		public Set<string> $SEAs = Set{} // side-effect accumulators
 		) {
 		parent::__construct($units);

@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "5e19f102a50a4537f41bc369724461ca",
-    "content-hash": "88e4032fc641e6cd46a120fd1d4d5bf4",
+    "hash": "984b65e6d8188cb33610a2d0bd38b8cc",
+    "content-hash": "5d3015d8e9eec480c02a8a4e4dd0f51d",
     "packages": [
         {
             "name": "analog/analog",
@@ -101,6 +101,22 @@
                 "event-emitter"
             ],
             "time": "2012-11-02 14:49:47"
+        },
+        {
+            "name": "fog/HHRx",
+            "version": "dev-dev-master",
+            "source": {
+                "type": "git",
+                "url": "/home/fog/hack/hack-react/",
+                "reference": "0be67d146ec271003e3504a338e0c8debcca7455"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "HHRx\\": "src"
+                }
+            },
+            "time": "2017-01-01 22:40:59"
         },
         {
             "name": "greenlion/php-sql-parser",
@@ -766,7 +782,9 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "fog/hhrx": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

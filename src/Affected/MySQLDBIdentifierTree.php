@@ -1,7 +1,7 @@
 <?hh // strict
 namespace Pando\Affected;
 use \Pando\IdentifierTree;
-final class MySQLDBIdentifierTree extends \Pando\Util\Collection\KeyedIterableWrapper<string, Set<string>, Map<string, Set<string>>> implements IdentifierTree {
+final class MySQLDBIdentifierTree<+T> extends \Pando\Util\Collection\KeyedIterableWrapper<string, Set<string>, Map<string, Set<string>>> implements IdentifierTree {
 	const string CATCHALL = '*';
 	/* theoretically I could get really fancy and define an abstract class of { bool catch_all, [T as Collection] $collection, ?[T as Collection] $ambiguous } for every level, then chain them together somehow in the calling class with something like `compose('RelationalDatabaseStructure', 'RelationalTableStructure')`;
 		RelationableDatabaseStructure<T as Collection> extends Structure<T>
@@ -15,7 +15,7 @@ final class MySQLDBIdentifierTree extends \Pando\Util\Collection\KeyedIterableWr
 	public function __construct(
 		public string $db,
 		// tables are in $this->get_units() ,
-		Map<string, Set<string>> $units = Map{},
+		Map<string, Map<string, T>> $units = Map{},
 		public Set<string> $ambiguous = Set{},
 		public bool $db_caughtall = false // if $db->*
 		) {
@@ -32,7 +32,7 @@ final class MySQLDBIdentifierTree extends \Pando\Util\Collection\KeyedIterableWr
 		$units = $this->get_units()
 			->mapWithKey(
 				(string $table_name, Set<string> $table) ==> $table->filter(
-					(string $col) ==> $incoming->get_units()->containsKey($table_name) && $incoming->get_units()[$table_name]->contains($col)
+					(string $col) ==> $incoming->get_units()->containsKey($table_name) && $incoming->get_units()[$table_name]->containsKey($col)
 					)
 				) // column intersection
 			->filter($unit ==> $unit->count() > 0); // filter empty keys
