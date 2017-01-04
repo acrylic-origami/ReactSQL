@@ -108,7 +108,7 @@
             "source": {
                 "type": "git",
                 "url": "/home/fog/hack/hack-react/",
-                "reference": "0be67d146ec271003e3504a338e0c8debcca7455"
+                "reference": "256b87ed9bcbd753f69d5cf9f1852a84f80935e7"
             },
             "type": "library",
             "autoload": {
@@ -116,7 +116,7 @@
                     "HHRx\\": "src"
                 }
             },
-            "time": "2017-01-01 22:40:59"
+            "time": "2017-01-02 06:17:32"
         },
         {
             "name": "greenlion/php-sql-parser",

@@ -1,8 +1,7 @@
 <?hh // strict
-namespace Pando\Affected;
-use \Pando\Affected;
-use \Pando\Util\Collection\KeyedIterableWrapper;
-final class MySQLIdentifierTree<+T> extends KeyedIterableWrapper<string, MySQLDBIdentifierTree, Map<string, MySQLDBIdentifierTree>> {
+namespace PandoDB\MySQL;
+use \Pando\Util\Collection\KeyedContainerWrapper as KC;
+class MySQLIdentifierCollection<+T as \PandoDB\IdentifierCollection> extends KC<string, MySQLDBIdentifierTree, Map<string, MySQLDBIdentifierTree>> implements \PandoDB\IdentifierCollection {
 	const string CATCHALL = MySQLDBIdentifierTree::CATCHALL;
 	public function __construct(
 		public string $default_db,

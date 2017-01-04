@@ -1,7 +1,6 @@
 <?hh // strict
-namespace Pando\Affected;
-use \Pando\IdentifierTree;
-final class MySQLDBIdentifierTree<+T> extends \Pando\Util\Collection\KeyedIterableWrapper<string, Set<string>, Map<string, Set<string>>> implements IdentifierTree {
+namespace PandoDB\MySQL;
+final class MySQLDBIdentifierTree<+TLeaf as \PandoDB\IdentifierCollection> extends \Pando\Util\Collection\KeyedIterableWrapper<string, Set<string>, Map<string, Set<string>>> implements IdentifierCollection {
 	const string CATCHALL = '*';
 	/* theoretically I could get really fancy and define an abstract class of { bool catch_all, [T as Collection] $collection, ?[T as Collection] $ambiguous } for every level, then chain them together somehow in the calling class with something like `compose('RelationalDatabaseStructure', 'RelationalTableStructure')`;
 		RelationableDatabaseStructure<T as Collection> extends Structure<T>
@@ -15,7 +14,7 @@ final class MySQLDBIdentifierTree<+T> extends \Pando\Util\Collection\KeyedIterab
 	public function __construct(
 		public string $db,
 		// tables are in $this->get_units() ,
-		Map<string, Map<string, T>> $units = Map{},
+		Map<string, Map<string, TLeaf>> $units = Map{},
 		public Set<string> $ambiguous = Set{},
 		public bool $db_caughtall = false // if $db->*
 		) {
@@ -31,10 +30,15 @@ final class MySQLDBIdentifierTree<+T> extends \Pando\Util\Collection\KeyedIterab
 		$ambiguous = $this->ambiguous->filter($ambiguous_col ==> $incoming->get_units()->contains($ambiguous_col));
 		$units = $this->get_units()
 			->mapWithKey(
-				(string $table_name, Set<string> $table) ==> $table->filter(
-					(string $col) ==> $incoming->get_units()->containsKey($table_name) && $incoming->get_units()[$table_name]->containsKey($col)
-					)
-				) // column intersection
+				(string $table_name, Set<string> $table) ==> $table->filterWithKey(
+					(string $col, TLeaf $leaf) ==> {
+						$incoming_units = $incoming->get_units();
+						return $incoming_units->containsKey($table_name) // table intersection
+							&& $incoming_units[$table_name]->containsKey($col) // column intersection
+							&& $incoming_units[$table_name][$col]->has_intersect($leaf); // leaf intersection
+					}
+				)
+			) // column intersection
 			->filter($unit ==> $unit->count() > 0); // filter empty keys
 			
 		if($ambiguous->count() === 0 && $units->count() === 0)
@@ -57,12 +61,26 @@ final class MySQLDBIdentifierTree<+T> extends \Pando\Util\Collection\KeyedIterab
 		if($incoming->db !== $this->db)
 			return false;
 		
-		return $incoming->keyed_reduce(
-			(bool $prev_table, Pair<string, Set<string>> $next_table) ==> $prev_table || $this->get_units()->containsKey($next_table[0]) && ($next_table[1]->contains(self::CATCHALL) || $next_table[1]->filter(
-				(mixed $next_col) ==> $this->get_units()[$next_table[0]]->contains($next_col)
-				)
-				->count() > 0) // which elements are contained in both this $units and the incoming $units?
-			, false);
+		foreach($this->get_units() as $table => $unit) {
+			$incoming_units = $incoming->get_units();
+			if($incoming_units->containsKey($table)) {
+				if($incoming_units[$table]->containsKey(self::CATCHALL) || $unit->containsKey(self::CATCHALL))
+					return true;
+				else
+					foreach($unit as $column => $leaf)
+						if($incoming_units[$table]->containsKey($column) && $incoming_units[$table][$column]->has_intersect($leaf))
+							return true;
+			}
+		}
+		return false;
+		
+		// functional gone wild
+		// return $incoming->keyed_reduce(
+		// 	(bool $prev_table, Pair<string, Set<string>> $next_table) ==> $prev_table || $this->get_units()->containsKey($next_table[0]) && ($next_table[1]->contains(self::CATCHALL) || $next_table[1]->filter(
+		// 		(mixed $next_col) ==> $this->get_units()[$next_table[0]]->contains($next_col)
+		// 		)
+		// 		->count() > 0) // which elements are contained in both this $units and the incoming $units?
+		// 	, false);
 	}
 	
 	public function add(?string $table = null, ?string $col = null, ?string $db = null): void {

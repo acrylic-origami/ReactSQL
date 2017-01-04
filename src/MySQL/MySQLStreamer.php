@@ -1,38 +1,48 @@
 <?hh // strict
 namespace PandoDB\MySQL;
-class MySQLStreamer {
-	const type callback = (function(MySQLIdentifierTree<Identifier>): Awaitable<void>);
+use \HHRx\Stream;
+use \HHRx\Streamlined;
+class MySQLStreamer implements Streamlined<this::IdentifierCollection> {
+	const type IdentifierCollection = \PandoDB\MySQL\MySQLIdentifierCollection<IdentifierTreeLeaf>;
+	const type callback = (function(this::IdentifierCollection): Awaitable<void>);
 	
-	private \HHRx\Stream<MySQLIdentifierTree<Identifier>> $local_stream;
-	private MySQLIdentifierSearchTree $search_tree;
-	private Vector<ConditionWaitHandle<MySQLIdentifierTree<Identifier>>> $subscribers; // lol memory leak land
-	public function __construct(string $default_db, ?\HHRx\Stream<MySQLIdentifierTree<Identifier>> $global_stream = null) {
-		$this->local_stream = $global_stream ?? \HHRx\Stream::empty();
-		$this->search_tree = new MySQLIdentifierSearchTree($default_db);
+	private Stream<this::IdentifierCollection> $local_stream;
+	private this::IdentifierCollection $search_tree;
+	private Vector<ConditionWaitHandle<this::IdentifierCollection>> $subscribers; // lol memory leak land
+	public function __construct(string $default_db, Stream<this::IdentifierCollection> $global_stream) {
+		$this->local_stream = $global_stream;
+		$this->search_tree = new MySQLIdentifierCollection($default_db);
 		
-		$this->local_stream->subscribe(async (MySQLIdentifierTree<Identifier> $incoming) ==> {
-			$visited = Set{};
-			foreach($this->search_tree->search($incoming) as $match) {
-				// under what conditions should I `fail` the ConditionWaitHandle?
-				if(!$visited->contains($match)) {
-					$visited->add($match);
-					$this->subscribers[$match]->succeed($incoming);
-					$this->subscribers[$match] = ConditionWaitHandle::create($this->local_stream->get_total_awaitable()); // does this race with the async callback?
-				}
+		$this->local_stream->subscribe(async (this::IdentifierCollection $incoming) ==> {
+			$matches = new Set($this->search_tree->intersect($incoming)->map((IdentifierTreeLeaf $leaf) ==> $leaf->get_id())); // Set for unique subscribers
+			foreach($matches as $match) {
+				$this->subscribers[$match]->succeed($incoming);
+				$this->subscribers[$match] = ConditionWaitHandle::create($this->local_stream->get_total_awaitable()); // does this race with the async callback?
 			}
+			// foreach($this->search_tree->search($incoming) as $match) {
+			// 	// under what conditions should I `fail` the ConditionWaitHandle?
+			// 	if(!$visited->contains($match)) {
+			// 		$visited->add($match);
+			// 		$this->subscribers[$match]->succeed($incoming);
+			// 		$this->subscribers[$match] = ConditionWaitHandle::create($this->local_stream->get_total_awaitable()); // does this race with the async callback?
+			// 	}
+			// }
 		});
 	}
-	public function filter(MySQLIdentifierTree<Identifier> $identifiers): Stream<MySQLIdentifierTree> {
-		$wait_handle = ConditionWaitHandle::create($this->local_stream->get_total_awaitable());
+	public function get_local_stream(): Stream<this::IdentifierCollection> {
+		return $this->local_stream;
+	}
+	public function filter(this::IdentifierCollection $dependencies): Stream<this::IdentifierCollection> {
+		$wait_handle = ConditionWaitHandle::create($this->local_stream->get_total_awaitable()->getWaitHandle());
 		$this->subscribers->add($wait_handle);
 		$id = $this->subscribers->count();
 		
 		//TODO:
-		$identifier->iterate((Identifier $identifier) ==> $identifier['id'] = $id));
+		$dependencies->iterate((IdentifierTreeLeaf $leaf) ==> $leaf->id = $id);
 
-		return new Stream(async {
-			foreach($this->local_stream->get_producer() await as $v)
-				yield await $this->subscribers[$id];
-		}
+		return new \HHRx\KeyedStream(async {
+			foreach($this->local_stream->get_producer() await as $_)
+				yield $id => (await $this->subscribers[$id]);
+		});
 	}
 }
