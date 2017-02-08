@@ -1,15 +1,16 @@
 <?hh // strict
 namespace PandoDB;
-use Pando\Util\Collection\KeyedContainerWrapper as KC;
-use Pando\Util\Collection\AsyncKeyedContainerWrapper as AsyncKC;
+use HHRx\Util\Collection\KeyedContainerWrapper as KC;
+use HHRx\Util\Collection\AsyncKeyedContainerWrapper as AsyncKC;
 abstract class Database implements \HHRx\Streamlined<IdentifierCollection> {
-	private \HHRx\Stream<IdentifierTree> $local_stream;
+	private \HHRx\Stream<IdentifierCollection> $local_stream; // a fork of the global write stream at construction time
 	protected ConditionWaitHandle<IdentifierCollection> $call_trigger;
-	public function __construct(?\HHRx\Stream<IdentifierCollection> $global_stream) {
-		$write_call_stream = new \HHRx\KeyedStream(async {
-			foreach($this->local_stream->get_producer() await as $_)
+	public function __construct(?\HHRx\Stream<IdentifierCollection> $global_stream, private \HHRx\StreamFactory $factory) {
+		$write_call_stream = $this->factory->bounded_make(async () ==> {
+			while(true)
 				yield await $this->call_trigger;
 		});
+		$this->call_trigger = ConditionWaitHandle::create($this->factory->get_total_awaitable()->getWaitHandle()); // does getWaitHandle freeze the awaitable? I don't think so and hope not!
 		if(is_null($global_stream))
 			$this->local_stream = $write_call_stream;
 		else
@@ -18,7 +19,7 @@ abstract class Database implements \HHRx\Streamlined<IdentifierCollection> {
 				$write_call_stream
 			});
 	}
-	public function get_local_stream(): \HHRx\Stream<IdentifierTree> {
+	public function get_local_stream(): \HHRx\Stream<IdentifierCollection> {
 		return $this->local_stream;
 	}
 }

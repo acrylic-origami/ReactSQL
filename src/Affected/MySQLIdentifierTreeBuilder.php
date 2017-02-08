@@ -26,7 +26,7 @@ final class MySQLIdentifierTreeBuilder implements IdentifierTreeBuilder {
 		return $this->build($identifier['col'], $identifier['table'], $identifier['db']);
 	}
 	public function build_from_identifiers(Vector<SQLIdentifier> $identifiers): Vector<MySQLIdentifierTree> {
-		$identifier_wrapper = new \Pando\Util\Collection\VectorWrapper($identifiers);
+		$identifier_wrapper = new \HHRx\Util\Collection\VectorWrapper($identifiers);
 		return $identifier_wrapper->reduce(
 			(MySQLIdentifierTree $prev, SQLIdentifier $identifier) ==> $prev->union($this->build_from_identifier($identifier))
 			, new MySQLIdentifierTree($this->db));

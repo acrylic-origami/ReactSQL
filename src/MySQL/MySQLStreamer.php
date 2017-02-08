@@ -2,18 +2,17 @@
 namespace PandoDB\MySQL;
 use \HHRx\Stream;
 use \HHRx\Streamlined;
-class MySQLStreamer implements Streamlined<this::IdentifierCollection> {
-	const type IdentifierCollection = \PandoDB\MySQL\MySQLIdentifierCollection<IdentifierTreeLeaf>;
-	const type callback = (function(this::IdentifierCollection): Awaitable<void>);
+class MySQLStreamer implements Streamlined<RWIdentifier> {
+	// const type callback = (function(RWIdentifier): Awaitable<void>);
 	
-	private Stream<this::IdentifierCollection> $local_stream;
-	private this::IdentifierCollection $search_tree;
-	private Vector<ConditionWaitHandle<this::IdentifierCollection>> $subscribers; // lol memory leak land
-	public function __construct(string $default_db, Stream<this::IdentifierCollection> $global_stream) {
+	private RWStream $local_stream;
+	private RWIdentifier $search_tree;
+	private Vector<ConditionWaitHandle<RWIdentifier>> $subscribers = Vector{}; // lol memory leak land
+	public function __construct(string $default_db, RWStream $global_stream, private \HHRx\StreamFactory $factory) {
 		$this->local_stream = $global_stream;
 		$this->search_tree = new MySQLIdentifierCollection($default_db);
 		
-		$this->local_stream->subscribe(async (this::IdentifierCollection $incoming) ==> {
+		$this->local_stream->subscribe(async (RWIdentifier $incoming) ==> {
 			$matches = new Set($this->search_tree->intersect($incoming)->map((IdentifierTreeLeaf $leaf) ==> $leaf->get_id())); // Set for unique subscribers
 			foreach($matches as $match) {
 				$this->subscribers[$match]->succeed($incoming);
@@ -29,18 +28,18 @@ class MySQLStreamer implements Streamlined<this::IdentifierCollection> {
 			// }
 		});
 	}
-	public function get_local_stream(): Stream<this::IdentifierCollection> {
+	public function get_local_stream(): RWStream {
 		return $this->local_stream;
 	}
-	public function filter(this::IdentifierCollection $dependencies): Stream<this::IdentifierCollection> {
+	public function filter(RWIdentifier $dependencies): RWStream {
 		$wait_handle = ConditionWaitHandle::create($this->local_stream->get_total_awaitable()->getWaitHandle());
 		$this->subscribers->add($wait_handle);
 		$id = $this->subscribers->count();
 		
 		//TODO:
-		$dependencies->iterate((IdentifierTreeLeaf $leaf) ==> $leaf->id = $id);
+		$dependencies->iterate_leaves((IdentifierTreeLeaf $leaf) ==> $leaf->id = $id);
 
-		return new \HHRx\KeyedStream(async {
+		return $this->factory->make(async {
 			foreach($this->local_stream->get_producer() await as $_)
 				yield $id => (await $this->subscribers[$id]);
 		});

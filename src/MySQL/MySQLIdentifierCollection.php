@@ -1,6 +1,6 @@
 <?hh // strict
 namespace PandoDB\MySQL;
-use \Pando\Util\Collection\KeyedContainerWrapper as KC;
+use \HHRx\Util\Collection\KeyedContainerWrapper as KC;
 class MySQLIdentifierCollection<+T as \PandoDB\IdentifierCollection> extends KC<string, MySQLDBIdentifierTree, Map<string, MySQLDBIdentifierTree>> implements \PandoDB\IdentifierCollection {
 	const string CATCHALL = MySQLDBIdentifierTree::CATCHALL;
 	public function __construct(
@@ -45,6 +45,14 @@ class MySQLIdentifierCollection<+T as \PandoDB\IdentifierCollection> extends KC<
 		return $incoming->keyed_reduce(
 			(bool $prev_db, Pair<string, MySQLDBIdentifierTree> $next_db) ==> $prev_db && $this->get_units()->containsKey($next_db[0]) && $next_db[1]->is_subset($this->get_units()[$next_db[0]])
 			, true);
+	}
+	
+	public function iterate_leaves((function(T $leaf): mixed) $f): void {
+		foreach($this->get_units() as $table => $tablespace) {
+			foreach($tablespace as $col => $leaf) {
+				$f($leaf);
+			}
+		}
 	}
 	
 	public function add_ambiguous(string $col, ?string $db = null): void {

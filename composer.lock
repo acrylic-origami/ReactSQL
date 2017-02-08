@@ -9,16 +9,16 @@
     "packages": [
         {
             "name": "analog/analog",
-            "version": "1.0.8-stable",
+            "version": "1.0.9-stable",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jbroadway/analog.git",
-                "reference": "9e02358735912ed203c073d192b5e07cb6b663dd"
+                "reference": "2f0f5e0be983bf84e97dd86f39465a486f9f3af6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jbroadway/analog/zipball/9e02358735912ed203c073d192b5e07cb6b663dd",
-                "reference": "9e02358735912ed203c073d192b5e07cb6b663dd",
+                "url": "https://api.github.com/repos/jbroadway/analog/zipball/2f0f5e0be983bf84e97dd86f39465a486f9f3af6",
+                "reference": "2f0f5e0be983bf84e97dd86f39465a486f9f3af6",
                 "shasum": ""
             },
             "require": {
@@ -54,7 +54,7 @@
                 "logging",
                 "syslog"
             ],
-            "time": "2016-08-10 22:15:10"
+            "time": "2016-11-17 14:39:33"
         },
         {
             "name": "evenement/evenement",
@@ -108,7 +108,7 @@
             "source": {
                 "type": "git",
                 "url": "/home/fog/hack/hack-react/",
-                "reference": "256b87ed9bcbd753f69d5cf9f1852a84f80935e7"
+                "reference": "0ac5a5d60acfd73a3c7827b2f38efd60c521e7b0"
             },
             "type": "library",
             "autoload": {
@@ -116,7 +116,7 @@
                     "HHRx\\": "src"
                 }
             },
-            "time": "2017-01-02 06:17:32"
+            "time": "2017-01-05 18:39:03"
         },
         {
             "name": "greenlion/php-sql-parser",

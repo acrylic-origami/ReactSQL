@@ -1,6 +1,6 @@
 <?hh // strict
 namespace PandoDB\MySQL;
-final class MySQLDBIdentifierTree<+TLeaf as \PandoDB\IdentifierCollection> extends \Pando\Util\Collection\KeyedIterableWrapper<string, Set<string>, Map<string, Set<string>>> implements IdentifierCollection {
+final class MySQLDBIdentifierTree<+TLeaf as \PandoDB\IdentifierCollection> extends \HHRx\Util\Collection\KeyedIterableWrapper<string, Set<string>, Map<string, Set<string>>> implements IdentifierCollection {
 	const string CATCHALL = '*';
 	/* theoretically I could get really fancy and define an abstract class of { bool catch_all, [T as Collection] $collection, ?[T as Collection] $ambiguous } for every level, then chain them together somehow in the calling class with something like `compose('RelationalDatabaseStructure', 'RelationalTableStructure')`;
 		RelationableDatabaseStructure<T as Collection> extends Structure<T>

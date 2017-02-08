@@ -28,11 +28,11 @@ class MySQLParser extends Parser<SQLQueryTree> {
 					$M[$ak] = $this->_treeify_parsed_query($v);
 				else {
 					invariant(is_string($v), 'External library implementation error: leaf of parsed query is not string.');
-					$M[$ak] = new \Pando\Tree\Tree(null, $v);
+					$M[$ak] = new \HHRx\Tree\Tree(null, $v);
 				}
 			});
 		}
-		return new \Pando\Tree\Tree($M, null);
+		return new \HHRx\Tree\Tree($M, null);
 	}
 	
 	public static function identifier(string $str): Vector<string> {

@@ -1,5 +1,5 @@
 {
-    "name": "fog/pando-db",
+    "name": "HHReact/pando-db",
     "description": "Reactive SQL database wrapper for Hack.",
     "license": "MIT",
     "authors": [
@@ -12,7 +12,7 @@
     "require": {
         "greenlion/php-sql-parser":"~4.0",
         "react/react":"~0.4",
-        "fog/HHRx":"dev-dev-master"
+        "HHReact/HHReactor":"dev-dev-master"
     },
     "autoload": {
         "psr-4": {
@@ -21,6 +21,6 @@
     },
     "repositories": [{
         "type": "vcs",
-        "url": "/home/fog/hack/hack-react/"
+        "url": "https://github.com/acrylic-origami/HHReactor"
     }]
 }
